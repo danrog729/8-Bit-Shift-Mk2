@@ -11,6 +11,8 @@ char reg4;
 char reg5;
 char reg6;
 char reg7;
+
+// CHANGE PROGRAM HERE
 char program[256] = {
 0x10, 0x01, 0x04, 0x40, 0x10, 0x7E, 0x04, 0x01, 0x10, 0x70, 0x04, 0x02, 0x02, 0x01, 0x01, 0x40,
 0x04, 0x04, 0x02, 0x02, 0x01, 0x40, 0x04, 0x08, 0x10, 0x34, 0x04, 0x80, 0x08, 0x08, 0x01, 0x01,
@@ -18,6 +20,7 @@ char program[256] = {
 0x02, 0x40, 0x20, 0x80, 0x10, 0x18, 0x04, 0x80, 0x08, 0x02, 0x01, 0x04, 0x04, 0x02, 0x02, 0x02,
 0x01, 0x40, 0x04, 0x08, 0x02, 0x40, 0x20, 0x80, 0x10, 0x18, 0x04, 0x80, 0x08, 0x01, 0x01, 0x08,
 0x04, 0x01, 0x02, 0x01, 0x01, 0x40, 0x04, 0x04, 0x02, 0x40, 0x20, 0x80, 0x10, 0x00, 0x80, 0x01};
+
 char ram[256];
 
 void add_command(char* reg);
@@ -33,8 +36,10 @@ void core_dump();
 
 int main()
 {
+	// run until it hits the end of the program array. failsafe incase the program doesn't stop beforehand
 	while (pc < 256)
 	{
+		// get a pointer to the desired register, unless the opcode is an immediate
 		char* desiredRegister = 0x00;
 		if (program[pc] != 0x10)
 		{
@@ -63,6 +68,7 @@ int main()
 			}
 		}
 
+		// execute the command
 		switch (program[pc])
 		{
 		case (char)0x01:
@@ -82,6 +88,7 @@ int main()
 		case (char)0x80:
 			out_command(desiredRegister); pc += 2; break;
 		default:
+			// this is usually where a program would end. future versions may have a halt instruction
 			printf("UNRECOGNISED OPCODE %02x\n", program[pc] & 0xff);
 			core_dump();
 			return -1;
@@ -89,6 +96,7 @@ int main()
 	}
 }
 
+// all of these are self-explanatory
 void add_command(char* reg)
 {
 	acc += *reg;
@@ -136,9 +144,12 @@ void out_command(char* reg)
 	ram[acc] = *reg;
 }
 
+// print the entire contents of the cpu (this is why i think its way easier to do low-level coding on an emulator)
 void core_dump()
 {
 	printf("CORE DUMP\n");
+	
+	// print the contents of the program memory
 	printf("PROGRAM:\n");
 	printf("   _0 _1 _2 _3 _4 _5 _6 _7 _8 _9 _a _b _c _d _e _f\n");
 	for (int row = 0; row < 16; row++)
@@ -150,6 +161,8 @@ void core_dump()
 		}
 		printf("\n");
 	}
+
+	// print the contents of the registers
 	printf("  PC = %02x\n", pc & 0xff);
 	printf(" ACC = %02x\n", acc & 0xff);
 	printf("REG0 = %02x\n", reg0 & 0xff);
@@ -160,6 +173,8 @@ void core_dump()
 	printf("REG5 = %02x\n", reg5 & 0xff);
 	printf("REG6 = %02x\n", reg6 & 0xff);
 	printf("REG7 = %02x\n", reg7 & 0xff);
+
+	// print the contents of the ram
 	printf("RAM:\n");
 	printf("   _0 _1 _2 _3 _4 _5 _6 _7 _8 _9 _a _b _c _d _e _f\n");
 	for (int row = 0; row < 16; row++)
